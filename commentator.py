@@ -10,7 +10,8 @@ import requests
 from bs4 import BeautifulSoup
 
 # Globals
-DB_PATH = os.path.join(__file__, "commentator.db")
+DB_PATH = os.path.join(os.path.join(
+    idaapi.get_user_idadir(), "plugins"), "commentator.db")
 nimps = idaapi.get_import_module_qty()
 decl_map = {}
 func_map = {}
