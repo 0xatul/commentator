@@ -7,12 +7,11 @@ function prototype of the winapi function just so its easier to focus.
 
 ## Installation
 
-1. Copy `funcs.db` somewhere, and edit `commentator.py`'s `DB_PATH` accordingly
-2. From your disassembler's python console, run the following command to find its plugin directory:
+1. From your disassembler's python console, run the following command to find its plugin directory:
     - **IDA Pro**: `os.path.join(idaapi.get_user_idadir(), "plugins")`
 
-3. Copy `commentator.py` to the listed directory
-4. Restart IDA.
+2. Copy `commentator.py` and `commentator.db` to the listed directory
+3. Restart IDA.
 
 This plugin assumes you have python3
 
@@ -23,3 +22,5 @@ function in that idb is annotated
 
 
 ## Thanks
+
+- [mrexodia](https://github.com/mrexodia)

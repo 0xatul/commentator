@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from typing import Optional
 
@@ -9,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # Globals
-DB_PATH = "CHANGE ME"  # NOTE: add a config file maybe?
+DB_PATH = os.path.join(__file__, "commentator.db")
 nimps = idaapi.get_import_module_qty()
 decl_map = {}
 func_map = {}
