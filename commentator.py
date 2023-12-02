@@ -162,7 +162,7 @@ class Commentator(idaapi.plugin_t):
         xrefs = idautils.CodeRefsTo(func_ea, 0)
         for xref in xrefs:
             comment(xref, get_decl(iden))
-        ida_kernel.refresh_idaview_anyway()
+        ida_kernwin.refresh_idaview_anyway()
 
     def term(self):
         """DO NOTHING"""
