@@ -2,7 +2,6 @@ import os
 import sqlite3
 from typing import Optional
 
-import ida_kernwin
 import ida_hexrays
 import ida_name
 import idaapi
@@ -162,7 +161,6 @@ class Commentator(idaapi.plugin_t):
         xrefs = idautils.CodeRefsTo(func_ea, 0)
         for xref in xrefs:
             comment(xref, get_decl(iden))
-        ida_kernel.refresh_idaview_anyway()
 
     def term(self):
         """DO NOTHING"""
