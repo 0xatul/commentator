@@ -47,10 +47,73 @@ def decompile(ea=None) -> Optional[idaapi.cfunc_t]:
     return cf
 
 
+def blk_cmnt(ea, cmnt: str) -> bool:
+    cf: idaapi.cfunc_t = decompile(ea)
+    if cf is None:
+        return False
+    cf.build_c_tree()
+    tl: idaapi.treeloc_t = idaapi.treeloc_t()
+    tl.itp = idaapi.ITP_BLOCK1
+
+    # ctree visitors are CMAT_FINAL
+    class CommentatorVisitor(idaapi.ctree_visitor_t):
+        def __init__(self):
+            idaapi.ctree_visitor_t.__init__(self, idaapi.CV_PARENTS)
+
+        def visit_expr(self, e: idaapi.cexpr_t) -> int:
+            p: idaapi.citem_t = cf.body.find_parent_of(e)
+            """
+            Whenever we have a scenario like 
+                                _______ lvar
+                              /
+                             / 
+            expr ---> cot_asg
+                             \
+                              \
+                               \ ________ call 
+            to put a block comment right above the call we have to put the ea of the cot_asg node
+            """
+            if p.is_expr():
+                ee: idaapi.cexpr_t = p.cexpr
+                if ee.op == idaapi.cot_asg:
+                    sec_opnd: idaapi.citem_t = ee.y
+                    if sec_opnd.op == idaapi.cot_call and sec_opnd.ea == ea:
+                        tl.ea = ee.ea
+                        return 1
+                else:
+                    """
+                    given that its an instance of just FuncCall() by itself then we just put the ea of the function call
+                    """
+                    if ee.op == idaapi.cot_call:
+                        tl.ea = ea
+                        return 1
+
+            return 0
+
+        def visit_insn(self, *args) -> int:
+            """
+            we do not care about this right now
+            """
+            return 0
+
+    CommentatorVisitor().apply_to(cf.body, None)
+    cf.set_user_cmt(tl, cmnt)
+    cf.save_user_cmts()
+    cf.__str__()
+    if not cf.has_orphan_cmts():
+        return True
+    print("orphanned again")
+    cf.del_orphan_cmts()
+    cf.save_user_cmts()
+    return False
+
+
 # Referenced and improved upon from: https://github.com/mandiant/FIDL/blob/master/FIDL/decompiler_utils.py#L2105
-def comment(ea, cmnt) -> bool:
+def comment(ea, cmnt: str) -> bool:
     cf = decompile(ea)
-    tl = idaapi.treeloc_t()
+    if cf is None:
+        return False
+    tl: idaapi.treeloc_t = idaapi.treeloc_t()
     tl.ea = ea
     # https://hex-rays.com/products/decompiler/manual/sdk/hexrays_8hpp.shtml#a219c95f85c085e6f539b8d3b96074aee
     for itp in [idaapi.ITP_SEMI, idaapi.ITP_CURLY1, idaapi.ITP_CURLY2, idaapi.ITP_COLON, idaapi.ITP_BRACE1,
@@ -63,6 +126,12 @@ def comment(ea, cmnt) -> bool:
             return True
         cf.del_orphan_cmts()
     return False
+
+
+def comment_above_or_else(ea, cmnt) -> bool:
+    if not blk_cmnt(ea, cmnt):
+        return comment(ea, cmnt)
+    return True
 
 
 def sanitize_name(n: str) -> str:
@@ -162,9 +231,8 @@ class Commentator(idaapi.plugin_t):
 
         xrefs = idautils.CodeRefsTo(func_ea, 0)
         for xref in xrefs:
-            comment(xref, get_decl(iden))
+            comment_above_or_else(xref, get_decl(iden))
         ida_kernwin.refresh_idaview_anyway()
-
 
     def term(self):
         """DO NOTHING"""
