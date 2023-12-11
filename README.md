@@ -15,10 +15,25 @@ function prototype of the winapi function just so its easier to focus.
 
 This plugin assumes you have python3
 
+
+# Usage
 ## Usage
 
 Put the cursor to the function call which you want to annotation for and press `Ctrl-Alt-S`, every call for that
 function in that idb is annotated
+
+## Screenshot
+
+![](imgs/blk_cmnt.png)
+
+![](imgs/blk_cmnt2.png)
+
+*note: these screenshots are from the other branch*
+
+
+## TODO
+- Add scripts and steps to generate `commentator.db` by parsing local documentation from msdn
+- Fix stuff in the `blkcmnt` branch and merge it to main
 
 
 ## Thanks
