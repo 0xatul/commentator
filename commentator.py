@@ -37,9 +37,10 @@ def decompile(ea=None) -> Optional[idaapi.cfunc_t]:
     try:
         cf = idaapi.decompile(
             ea=ea,
-            flags=ida_hexrays.DECOMP_NO_WAIT | ida_hexrays.DECOMP_NO_CACHE
+            flags=ida_hexrays.DECOMP_NO_WAIT
         )
-        cf.refresh_func_ctext()
+        if cf is not None:
+            cf.refresh_func_ctext()
     except ida_hexrays.DecompilationFailure as e:
         print("Failed to decompile @ {:X}".format(ea))
         cf = None
@@ -128,7 +129,7 @@ def comment(ea, cmnt: str) -> bool:
     return False
 
 
-def comment_above_or_else(ea, cmnt) -> bool:
+def comment_above_or_else(ea, cmnt: str) -> bool:
     if not blk_cmnt(ea, cmnt):
         return comment(ea, cmnt)
     return True
